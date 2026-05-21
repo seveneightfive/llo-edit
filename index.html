@@ -62,10 +62,23 @@ header{
 /* ── SIDEBAR ──────────────────────────────────────────── */
 .sidebar{
   width:var(--sb);background:var(--sb-bg);color:var(--sb-txt);
-  overflow-y:auto;flex-shrink:0;border-right:1px solid var(--sb-border);
+  flex-shrink:0;border-left:1px solid var(--sb-border);
   display:flex;flex-direction:column;
   transition:transform var(--t);
+  height:calc(100vh - var(--hh));position:sticky;top:var(--hh);
 }
+.sb-toolbar{
+  flex-shrink:0;background:#0f1825;border-bottom:1px solid var(--sb-border);
+  padding:8px 10px;position:sticky;top:0;z-index:5;min-height:46px;
+  display:flex;align-items:center;
+}
+.sb-toolbar:empty::before{content:"Open a page to use formatting";font-size:.68rem;color:var(--sb-muted);font-style:italic;letter-spacing:.04em}
+.sb-toolbar .rte-toolbar{background:transparent;border:none;padding:0;position:static;display:flex;flex-wrap:wrap;gap:2px;width:100%}
+.sb-toolbar .rte-btn{color:var(--sb-txt);font-size:.78rem;padding:4px 7px}
+.sb-toolbar .rte-btn:hover{background:rgba(255,255,255,.08);color:#fff}
+.sb-toolbar .rte-btn.is-active{background:var(--orange);color:#fff}
+.sb-toolbar .rte-sep{background:rgba(255,255,255,.12)}
+.sb-scroll{flex:1;overflow-y:auto;min-height:0}
 .sb-section{padding:6px 0;border-bottom:1px solid var(--sb-border)}
 .sb-head{padding:10px 14px 4px;font-size:.58rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--orange)}
 /* top-level nav items (Front Matter, Photo Library) */
@@ -119,7 +132,7 @@ header{
 .sb-page-dot{width:5px;height:5px;border-radius:50%;background:var(--blue);flex-shrink:0}
 
 /* ── MAIN ─────────────────────────────────────────────── */
-.main{flex:1;overflow-y:auto;background:var(--cream)}
+.main{flex:1;overflow-y:auto;background:var(--cream);min-width:0}
 
 /* ── LOGIN ────────────────────────────────────────────── */
 .login-wrap{display:flex;align-items:center;justify-content:center;height:100%;padding:40px}
@@ -143,7 +156,15 @@ header{
 .err{background:#fff0f0;border:1px solid #ffb3b3;border-radius:6px;padding:9px 12px;color:#b00020;font-size:.82rem;margin-bottom:10px;display:none}
 
 /* ── EDITOR PANELS ────────────────────────────────────── */
-.ed-wrap{max-width:800px;margin:0 auto;padding:32px 32px 100px}
+.ed-wrap{max-width:880px;margin:0 auto;padding:32px 40px 100px}
+.ed-wrap.ed-wrap-page{max-width:none;margin:0;padding:24px 36px 100px}
+.ed-stack{display:flex;flex-direction:column;gap:0}
+/* Front Matter split */
+.fm-split{display:grid;grid-template-columns:minmax(280px,360px) 1fr;gap:24px;align-items:start}
+@media(max-width:900px){.fm-split{grid-template-columns:1fr}}
+.fm-left,.fm-right{display:flex;flex-direction:column;gap:16px}
+/* hide the body card toolbar since it moves to sidebar */
+.ed-card .rte-toolbar.in-card{display:none}
 
 /* breadcrumb */
 .ed-breadcrumb{
@@ -298,7 +319,7 @@ header{
 .tiptap-body figcaption:empty::before{content:"Caption (click to edit)";color:var(--border)}
 /* drag handle for figure */
 .tiptap-body figure::before{
-  content:"⠿⠿";position:absolute;top:6px;left:6px;
+  content:"⋮⋮⋮⋮";position:absolute;top:6px;left:6px;
   background:rgba(255,255,255,.85);color:var(--muted);
   font-size:.75rem;padding:2px 5px;border-radius:3px;cursor:grab;
   opacity:0;transition:opacity var(--t);letter-spacing:2px;
@@ -383,7 +404,7 @@ input[type=file]{display:none}
 
 /* ── MOBILE ───────────────────────────────────────────── */
 @media(max-width:720px){
-  .sidebar{position:fixed;top:var(--hh);bottom:0;left:0;z-index:150;transform:translateX(-100%)}
+  .sidebar{position:fixed;top:var(--hh);bottom:0;right:0;left:auto;z-index:150;transform:translateX(100%)}
   .sidebar.mobile-open{transform:translateX(0)}
   .hdr-sb-btn{display:block}
   .imgmgr-stats{grid-template-columns:repeat(2,1fr)}
@@ -428,8 +449,11 @@ input[type=file]{display:none}
 
   <!-- EDITOR -->
   <div id="editor-app" class="hidden" style="display:flex;width:100%">
-    <div class="sidebar" id="sidebar"></div>
     <div class="main" id="main-area"></div>
+    <div class="sidebar" id="sidebar">
+      <div class="sb-toolbar" id="sb-toolbar"></div>
+      <div class="sb-scroll" id="sb-scroll"></div>
+    </div>
   </div>
 </div>
 
@@ -677,7 +701,7 @@ function initTiptap(el, content, pageId) {
 
 // ── SIDEBAR ───────────────────────────────────────────────
 function buildSidebar() {
-  const sb = document.getElementById("sidebar");
+  const sb = document.getElementById("sb-scroll");
   sb.innerHTML = "";
 
   // Front Matter
@@ -753,7 +777,7 @@ function buildSidebar() {
       pgRow.dataset.pageId = pg.id;
       pgRow.draggable = true;
 
-      const dh = mkEl("span","sb-page-drag-handle"); dh.textContent="⠿";
+      const dh = mkEl("span","sb-page-drag-handle"); dh.textContent="⋮⋮";
       const dot = isPageActive ? mkEl("span","sb-page-dot") : null;
       const name = mkEl("span","sb-page-name");
       name.textContent = pg.subtitle || "Untitled";
@@ -893,6 +917,7 @@ async function movePageToChapter(pageId, targetChapterId) {
 
 // ── FRONT MATTER ──────────────────────────────────────────
 function showFrontMatter() {
+  const _tb=document.getElementById("sb-toolbar"); if(_tb)_tb.innerHTML="";
   setActiveNav("fm", null, null);
   destroyTiptap();
   const main = document.getElementById("main-area");
@@ -902,45 +927,45 @@ function showFrontMatter() {
   const title = mkEl("div","ed-fm-title"); title.textContent="📖 Front Matter — appears at the start of your story";
   wrap.appendChild(title);
 
-  // Book cover
-  wrap.appendChild(makeFmCard("📸 Book Cover Photo","Shows on your title page",makeFmCoverZone()));
+  const split = mkEl("div","fm-split");
+  const left  = mkEl("div","fm-left");
+  const right = mkEl("div","fm-right");
+  split.appendChild(left); split.appendChild(right);
+  wrap.appendChild(split);
 
-  // Intro photo (NEW)
-  wrap.appendChild(makeFmCard("🖼 Introduction Photo","Optional: shows alongside your introduction text",makeFmIntroPhotoZone()));
+  // LEFT: cover + intro photo
+  left.appendChild(makeFmCard("📸 Book Cover Photo","Shows on your title page",makeFmCoverZone()));
+  left.appendChild(makeFmCard("🖼 Introduction Photo","Optional: shows alongside your introduction text",makeFmIntroPhotoZone()));
 
-  // Title
+  // RIGHT: text fields
   const titleCard = makeFmCard("📚 Book Title","");
   const titleIn = mkEl("input","ed-field"); titleIn.type="text";
   titleIn.placeholder="The title of this story…"; titleIn.value=esc(book.title||"");
   titleIn.id="fm-title"; titleIn.oninput=scheduleBookSave;
   titleCard.querySelector(".ed-card").appendChild(titleIn);
-  wrap.appendChild(titleCard);
+  right.appendChild(titleCard);
 
-  // Author
   const authorCard = makeFmCard("✏️ Author","Name shown on cover");
   const authorIn = mkEl("input","ed-field"); authorIn.type="text";
   authorIn.placeholder="Author name…"; authorIn.value=esc(book.author||"");
   authorIn.id="fm-author"; authorIn.oninput=scheduleBookSave;
   authorCard.querySelector(".ed-card").appendChild(authorIn);
-  wrap.appendChild(authorCard);
+  right.appendChild(authorCard);
 
-  // Dedication
   const dedCard = makeFmCard("🕊 Dedication","Optional");
   const dedTA = mkEl("textarea","ed-field"); dedTA.rows=3;
   dedTA.placeholder="e.g. For my family, with love…"; dedTA.textContent=book.dedication||"";
   dedTA.id="fm-dedication"; dedTA.oninput=scheduleBookSave;
   dedCard.querySelector(".ed-card").appendChild(dedTA);
-  wrap.appendChild(dedCard);
+  right.appendChild(dedCard);
 
-  // Introduction
   const introCard = makeFmCard("✍️ Introduction","");
   const introTA = mkEl("textarea","ed-field"); introTA.rows=7;
   introTA.placeholder="Write a brief introduction to your story…"; introTA.textContent=book.intro||"";
   introTA.id="fm-intro"; introTA.oninput=scheduleBookSave;
   introCard.querySelector(".ed-card").appendChild(introTA);
-  wrap.appendChild(introCard);
+  right.appendChild(introCard);
 
-  // Intro image caption (only visible if there's an intro image)
   if (book.intro_image_url) {
     const capCard = makeFmCard("🏷 Introduction Photo Caption","");
     const capIn = mkEl("input","ed-field"); capIn.type="text";
@@ -948,7 +973,7 @@ function showFrontMatter() {
     capIn.value=esc(book.intro_image_caption||"");
     capIn.id="fm-intro-caption"; capIn.oninput=scheduleBookSave;
     capCard.querySelector(".ed-card").appendChild(capIn);
-    wrap.appendChild(capCard);
+    left.appendChild(capCard);
   }
 
   main.appendChild(wrap);
@@ -1049,6 +1074,7 @@ async function doBookSave() {
 
 // ── CHAPTER VIEW ──────────────────────────────────────────
 function showChapter(chId) {
+  const _tb=document.getElementById("sb-toolbar"); if(_tb)_tb.innerHTML="";
   setActiveNav("chapter", chId, null);
   destroyTiptap();
   const ch = chapters.find(c=>c.id===chId);
@@ -1142,6 +1168,7 @@ function showPage(pageId) {
 
   const wrap = mkEl("div","ed-wrap");
 
+  wrap.classList.add("ed-wrap-page");
   // Breadcrumb
   const bc = mkEl("div","ed-breadcrumb");
   bc.innerHTML=`<span class="ed-bc-chapter">${esc(ch?.title||"Chapter")}</span><span class="ed-bc-sep">›</span><span class="ed-bc-page">${esc(pg.subtitle||"Untitled")}</span>`;
@@ -1199,28 +1226,30 @@ function showPage(pageId) {
   const bodyHint = mkEl("span","ed-card-hint"); bodyHint.textContent="Rich text — supports images, headings, blockquotes";
   bodyHdr.appendChild(bodyLbl); bodyHdr.appendChild(bodyHint); bodyCard.appendChild(bodyHdr);
 
-  // Toolbar
-  const toolbar = mkEl("div","rte-toolbar"); toolbar.id=`rte-tb-${pageId}`;
-  toolbar.innerHTML=`
-    <button class="rte-btn" id="tb-bold"      onclick="rteCmd('toggleBold')"><b>B</b></button>
-    <button class="rte-btn" id="tb-italic"    onclick="rteCmd('toggleItalic')"><i>I</i></button>
-    <button class="rte-btn" id="tb-underline" onclick="rteCmd('toggleUnderline')"><u>U</u></button>
-    <div class="rte-sep"></div>
-    <button class="rte-btn" onclick="rteCmd('toggleHeading',{level:2})">H2</button>
-    <button class="rte-btn" onclick="rteCmd('toggleHeading',{level:3})">H3</button>
-    <button class="rte-btn" onclick="rteCmd('toggleHeading',{level:4})">H4</button>
-    <div class="rte-sep"></div>
-    <button class="rte-btn" onclick="rteCmd('toggleBlockquote')">❝</button>
-    <button class="rte-btn" onclick="rteCmd('toggleBulletList')">• List</button>
-    <button class="rte-btn" onclick="rteCmd('toggleOrderedList')">1. List</button>
-    <button class="rte-btn" onclick="rteCmd('setHorizontalRule')">—</button>
-    <div class="rte-sep"></div>
-    <button class="rte-btn" onclick="insertFigure(${pageId})">🖼 Insert Image</button>
-    <div class="rte-sep"></div>
-    <button class="rte-btn" onclick="rteCmd('undo')">↩</button>
-    <button class="rte-btn" onclick="rteCmd('redo')">↪</button>
-  `;
-  bodyCard.appendChild(toolbar);
+  // Toolbar — render into the sidebar slot (sticky above page nav)
+  const sbTb = document.getElementById("sb-toolbar");
+  if (sbTb) {
+    sbTb.innerHTML = `
+      <div class="rte-toolbar" id="rte-tb-${pageId}">
+        <button class="rte-btn" id="tb-bold"      onclick="rteCmd('toggleBold')"><b>B</b></button>
+        <button class="rte-btn" id="tb-italic"    onclick="rteCmd('toggleItalic')"><i>I</i></button>
+        <button class="rte-btn" id="tb-underline" onclick="rteCmd('toggleUnderline')"><u>U</u></button>
+        <div class="rte-sep"></div>
+        <button class="rte-btn" onclick="rteCmd('toggleHeading',{level:2})">H2</button>
+        <button class="rte-btn" onclick="rteCmd('toggleHeading',{level:3})">H3</button>
+        <button class="rte-btn" onclick="rteCmd('toggleHeading',{level:4})">H4</button>
+        <div class="rte-sep"></div>
+        <button class="rte-btn" onclick="rteCmd('toggleBlockquote')">❝</button>
+        <button class="rte-btn" onclick="rteCmd('toggleBulletList')">• List</button>
+        <button class="rte-btn" onclick="rteCmd('toggleOrderedList')">1. List</button>
+        <button class="rte-btn" onclick="rteCmd('setHorizontalRule')">—</button>
+        <div class="rte-sep"></div>
+        <button class="rte-btn" onclick="insertFigure(${pageId})">🖼 Image</button>
+        <div class="rte-sep"></div>
+        <button class="rte-btn" onclick="rteCmd('undo')">↩</button>
+        <button class="rte-btn" onclick="rteCmd('redo')">↪</button>
+      </div>`;
+  }
 
   // Tiptap mount point
   const editorEl = mkEl("div","rte-wrap"); editorEl.id=`rte-mount-${pageId}`;
@@ -1434,6 +1463,7 @@ document.getElementById("file-in").addEventListener("change", async e => {
 
 // ── IMAGE MANAGER ─────────────────────────────────────────
 function showImageManager() {
+  const _tb=document.getElementById("sb-toolbar"); if(_tb)_tb.innerHTML="";
   setActiveNav("images", null, null);
   destroyTiptap();
   const main=document.getElementById("main-area");
