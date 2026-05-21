@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Story Editor — Lasting Legacy Online</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --blue:        #298FC2;
+  --blue-dark:   #1a6a96;
+  --blue-light:  #e8f4fb;
+  --orange:      #FF8200;
+  --orange-light:#fff3e6;
+  --green:       #74AA50;
+  --cream:       #fafaf8;
+  --white:       #ffffff;
+  --ink:         #1a1a2e;
+  --muted:       #676767;
+  --border:      #e0e0e0;
+  --shadow:      0 2px 16px rgba(41,143,194,0.10);
+  --radius:      8px;
+  --t:           0.18s ease;
+  --sidebar-w:   240px;
+  --header-h:    54px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Nunito', sans-serif; background: var(--cream); color: var(--ink); height: 100vh; overflow: hidden; }
+
+/* HEADER */
+header {
+  height: var(--header-h); background: #1a1a2e;
+  display: flex; align-items: center; padding: 0 18px; gap: 12px;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+}
+.header-logo { height: 32px; width: auto; flex-shrink: 0; }
+.header-div { width: 1px; height: 24px; background: rgba(255,255,255,0.15); }
+.header-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+.header-book { font-size: 0.82rem; color: rgba(255,255,255,0.75); font-weight: 600; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-left: auto; }
+.save-ind { font-size: 0.7rem; padding: 3px 10px; border-radius: 20px; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.5); transition: all var(--t); font-weight: 600; }
+.save-ind.saving { background: rgba(255,130,0,0.2); color: #ffaa44; }
+.save-ind.saved  { background: rgba(116,170,80,0.2); color: #90d060; }
+.save-ind.error  { background: rgba(255,80,80,0.2);  color: #ffaaaa; }
+.hdr-btn { background: transparent; border: 1px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.65); padding: 4px 11px; border-radius: 4px; font-size: 0.72rem; cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 700; transition: all var(--t); text-decoration: none; white-space: nowrap; }
+.hdr-btn:hover { background: rgba(255,255,255,0.08); }
+.hdr-btn.orange { background: rgba(255,130,0,0.15); border-color: rgba(255,130,0,0.4); color: #ffaa44; }
+.hdr-btn.orange:hover { background: rgba(255,130,0,0.25); }
+
+/* LAYOUT */
+.app { display: flex; height: calc(100vh - var(--header-h)); margin-top: var(--header-h); }
+
+/* SIDEBAR */
+.sidebar {
+  width: var(--sidebar-w); background: #1a2535; color: #e0eaf4;
+  overflow-y: auto; flex-shrink: 0; border-right: 1px solid rgba(41,143,194,0.12);
+}
+.sb-head { padding: 14px 14px 4px; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange); }
+.ch-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px; cursor: pointer; font-size: 0.8rem; font-weight: 600;
+  border-left: 3px solid transparent; transition: all var(--t); line-height: 1.3;
+}
+.ch-item:hover { background: rgba(41,143,194,0.1); }
+.ch-item.active { background: rgba(41,143,194,0.16); border-left-color: var(--blue); color: #7dc8f0; }
+.ch-num { font-size: 0.6rem; color: var(--orange); font-weight: 800; min-width: 16px; }
+.ch-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fm-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px; cursor: pointer; font-size: 0.8rem; font-weight: 600;
+  border-left: 3px solid transparent; transition: all var(--t); line-height: 1.3;
+  color: #c8d8e8;
+}
+.fm-item:hover { background: rgba(255,130,0,0.1); }
+.fm-item.active { background: rgba(255,130,0,0.15); border-left-color: var(--orange); color: #ffcc88; }
+.fm-icon { font-size: 0.85rem; }
+
+/* MAIN */
+.main { flex: 1; overflow-y: auto; background: var(--cream); }
+
+/* LOGIN */
+.login-wrap { display: flex; align-items: center; justify-content: center; height: 100%; padding: 40px; }
+.login-card {
+  background: white; border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 44px 36px; box-shadow: var(--shadow); width: 100%; max-width: 400px; text-align: center;
+}
+.login-card h2 { font-size: 1.6rem; font-weight: 800; color: var(--blue-dark); margin-bottom: 8px; }
+.login-card p { color: var(--muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 24px; }
+.login-fields { display: flex; gap: 10px; margin-bottom: 12px; }
+.login-input {
+  flex: 1; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 6px;
+  font-family: 'Nunito', sans-serif; font-size: 1rem; color: var(--ink); outline: none;
+  transition: border-color var(--t); text-align: center;
+}
+.login-input.pin-input { flex: 0 0 90px; font-size: 1.3rem; font-weight: 800; letter-spacing: 0.15em; }
+.login-input:focus { border-color: var(--blue); }
+.login-hint { font-size: 0.72rem; color: var(--muted); margin-bottom: 18px; }
+.btn-primary { background: var(--blue); color: white; border: none; border-radius: 6px; padding: 11px 20px; font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 700; cursor: pointer; width: 100%; transition: background var(--t); }
+.btn-primary:hover { background: var(--blue-dark); }
+.err { background: #fff0f0; border: 1px solid #ffb3b3; border-radius: 6px; padding: 9px 12px; color: #b00020; font-size: 0.82rem; margin-bottom: 10px; display: none; }
+
+/* STORY VIEW */
+.story-view { max-width: 760px; margin: 0 auto; padding: 40px 32px 100px; }
+
+/* Chapter header */
+.ch-editor-header { margin-bottom: 32px; }
+.ch-cover-zone { margin-bottom: 16px; border-radius: 8px; overflow: hidden; position: relative; cursor: pointer; }
+.ch-cover-zone img { width: 100%; max-height: 200px; object-fit: cover; display: block; }
+.ch-cover-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0); display: flex; align-items: center; justify-content: center; gap: 10px; transition: background var(--t); }
+.ch-cover-zone:hover .ch-cover-overlay { background: rgba(0,0,0,0.35); }
+.ch-cover-btn { background: rgba(255,255,255,0.9); color: var(--ink); border: none; border-radius: 4px; padding: 6px 12px; font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; opacity: 0; transition: opacity var(--t); }
+.ch-cover-zone:hover .ch-cover-btn { opacity: 1; }
+.ch-cover-empty { border: 2px dashed var(--border); border-radius: 8px; padding: 16px; text-align: center; color: var(--muted); font-size: 0.82rem; cursor: pointer; transition: all var(--t); font-weight: 600; }
+.ch-cover-empty:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+.ch-title-display { font-family: 'Lora', serif; font-size: 1.9rem; font-weight: 600; color: var(--blue-dark); margin-bottom: 8px; cursor: text; border-radius: 4px; padding: 2px 6px; margin-left: -6px; transition: background var(--t); }
+.ch-title-display:hover { background: var(--blue-light); }
+.ch-title-display[contenteditable="true"] { outline: none; background: var(--blue-light); border-bottom: 2px solid var(--blue); }
+.ch-lede-display { font-size: 1rem; color: var(--muted); font-style: italic; cursor: text; line-height: 1.7; border-radius: 4px; padding: 2px 6px; margin-left: -6px; transition: background var(--t); min-height: 28px; }
+.ch-lede-display:hover { background: #f5f5f5; }
+.ch-lede-display[contenteditable="true"] { outline: none; background: #f5f5f5; border-bottom: 1px dashed var(--border); }
+.ch-lede-display:empty::before { content: attr(data-placeholder); color: var(--border); }
+
+/* PAGE BLOCK */
+.page-block { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; transition: box-shadow var(--t); }
+.page-block:hover { box-shadow: 0 2px 12px rgba(41,143,194,0.10); }
+.page-block-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #f8f9fa; border-bottom: 1px solid var(--border); }
+.page-block-num { font-size: 0.7rem; font-weight: 800; color: var(--blue); }
+.page-subtitle-input { flex: 1; border: none; background: transparent; font-size: 0.82rem; font-weight: 700; color: var(--blue-dark); font-family: 'Nunito', sans-serif; outline: none; letter-spacing: 0.04em; text-transform: uppercase; }
+.page-subtitle-input::placeholder { color: var(--border); font-weight: 400; text-transform: none; letter-spacing: 0; }
+.page-block-tools { display: flex; gap: 4px; margin-left: auto; }
+.tool-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; cursor: pointer; border-radius: 4px; font-size: 0.85rem; color: var(--muted); transition: all var(--t); }
+.tool-btn:hover { background: var(--blue-light); color: var(--blue); }
+.tool-btn.danger:hover { background: #fff0f0; color: #c00020; }
+.rte-toolbar { display: flex; flex-wrap: wrap; gap: 2px; padding: 6px 10px; border-bottom: 1px solid var(--border); background: #f0f7ff; }
+.rte-btn { padding: 3px 8px; border: none; background: transparent; cursor: pointer; border-radius: 3px; font-size: 0.8rem; color: var(--muted); font-family: 'Nunito', sans-serif; transition: all var(--t); line-height: 1.4; font-weight: 700; }
+.rte-btn:hover { background: var(--blue-light); color: var(--blue-dark); }
+.rte-sep { width: 1px; background: var(--border); margin: 2px 4px; }
+.page-content { padding: 16px; min-height: 80px; outline: none; font-size: 0.95rem; line-height: 1.8; color: var(--ink); }
+.page-content:empty::before { content: attr(data-placeholder); color: var(--border); pointer-events: none; }
+.page-content h2, .page-content h3 { color: var(--blue-dark); margin: 8px 0 4px; }
+.page-content h2 { font-size: 1.2rem; } .page-content h3 { font-size: 1.05rem; }
+.page-content blockquote { border-left: 3px solid var(--orange); padding: 8px 16px; margin: 8px 0; color: var(--muted); font-style: italic; background: var(--cream); }
+.page-content img { max-width: 100%; border-radius: 4px; margin: 8px 0; display: block; }
+.page-images { padding: 10px 14px; background: #fdfaf5; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.page-img-thumb { position: relative; width: 64px; height: 64px; border-radius: 4px; overflow: hidden; border: 2px solid var(--border); cursor: pointer; transition: border-color var(--t); }
+.page-img-thumb:hover { border-color: var(--orange); }
+.page-img-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.page-img-thumb .del-img { position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 0.6rem; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--t); }
+.page-img-thumb:hover .del-img { opacity: 1; }
+.add-img-btn { width: 64px; height: 64px; border: 2px dashed var(--border); border-radius: 4px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--muted); transition: all var(--t); background: transparent; }
+.add-img-btn:hover { border-color: var(--orange); color: var(--orange); background: var(--orange-light); }
+.add-img-btn span { font-size: 0.6rem; margin-top: 2px; }
+.drag-handle { cursor: grab; color: var(--border); font-size: 1rem; padding: 0 4px; user-select: none; transition: color var(--t); display: flex; align-items: center; }
+.drag-handle:hover { color: var(--blue); }
+.drag-handle:active { cursor: grabbing; }
+.page-block.drag-over-top    { border-top: 3px solid var(--blue) !important; }
+.page-block.drag-over-bottom { border-bottom: 3px solid var(--blue) !important; }
+.page-block.dragging-block   { opacity: 0.4; background: var(--blue-light); }
+
+/* CHAPTER GALLERY */
+.ch-gallery-panel { margin-top: 20px; background: white; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.ch-gallery-hdr { padding: 10px 14px; background: var(--blue-light); border-bottom: 1px solid #c8dff0; display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+.ch-gallery-hdr:hover { background: #d8ecf8; }
+.ch-gallery-hdr-title { font-size: 0.78rem; font-weight: 800; color: var(--blue-dark); letter-spacing: 0.06em; text-transform: uppercase; flex: 1; }
+.ch-gallery-count { font-size: 0.68rem; background: rgba(0,0,0,0.07); padding: 2px 8px; border-radius: 10px; color: var(--muted); }
+.ch-gallery-body { padding: 12px; }
+.ch-gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin-bottom: 10px; }
+.ch-gallery-card { border-radius: 5px; overflow: hidden; border: 2px solid var(--border); position: relative; }
+.ch-gallery-card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+.ch-gallery-card-cap { font-size: 0.6rem; color: var(--muted); padding: 3px 5px; background: var(--cream); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ch-gallery-del { position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; background: rgba(0,0,0,0.65); color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 0.55rem; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--t); }
+.ch-gallery-card:hover .ch-gallery-del { opacity: 1; }
+.add-gallery-btn { width: 100%; padding: 9px; border: 2px dashed var(--border); border-radius: 6px; background: transparent; cursor: pointer; color: var(--muted); font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; transition: all var(--t); }
+.add-gallery-btn:hover { border-color: var(--orange); color: var(--orange); background: var(--orange-light); }
+
+/* FRONT MATTER */
+.fm-editor { max-width: 760px; margin: 0 auto; padding: 40px 32px 100px; }
+.fm-section-title { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange); margin-bottom: 16px; }
+.fm-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 20px; overflow: hidden; }
+.fm-card-header { padding: 10px 14px; background: #f8f9fa; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.fm-card-label { font-size: 0.72rem; font-weight: 800; color: var(--blue-dark); letter-spacing: 0.08em; text-transform: uppercase; flex: 1; }
+.fm-card-hint { font-size: 0.7rem; color: var(--muted); font-weight: 400; }
+.fm-field { width: 100%; padding: 14px 16px; border: none; outline: none; font-family: 'Nunito', sans-serif; font-size: 0.95rem; color: var(--ink); background: white; resize: vertical; line-height: 1.7; }
+.fm-field::placeholder { color: #c0c8d0; }
+.fm-cover-zone { position: relative; cursor: pointer; }
+.fm-cover-zone img { width: 100%; max-height: 220px; object-fit: cover; display: block; }
+.fm-cover-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0); display: flex; align-items: center; justify-content: center; gap: 10px; transition: background var(--t); }
+.fm-cover-zone:hover .fm-cover-overlay { background: rgba(0,0,0,0.35); }
+.fm-cover-btn { background: rgba(255,255,255,0.9); color: var(--ink); border: none; border-radius: 4px; padding: 6px 12px; font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: 'Nunito', sans-serif; opacity: 0; transition: opacity var(--t); }
+.fm-cover-zone:hover .fm-cover-btn { opacity: 1; }
+.fm-cover-empty { border: 2px dashed var(--border); margin: 12px; border-radius: 6px; padding: 20px; text-align: center; color: var(--muted); font-size: 0.82rem; cursor: pointer; transition: all var(--t); font-weight: 600; }
+.fm-cover-empty:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+.add-section-btn { width: 100%; padding: 12px; margin-top: 4px; border: 2px dashed var(--border); border-radius: var(--radius); background: transparent; cursor: pointer; color: var(--muted); font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 700; transition: all var(--t); display: flex; align-items: center; justify-content: center; gap: 8px; }
+.add-section-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+
+/* IMAGE MANAGER */
+.img-mgr { max-width: 860px; margin: 0 auto; padding: 32px 32px 100px; }
+.img-mgr-title { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange); margin-bottom: 20px; }
+.img-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+.img-stat { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; text-align: center; }
+.img-stat-num { font-size: 1.6rem; font-weight: 800; color: var(--blue-dark); }
+.img-stat-label { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+.img-toolbar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+.img-toolbar select, .img-toolbar input[type="text"] { padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 6px; font-family: 'Nunito', sans-serif; font-size: 0.82rem; color: var(--ink); outline: none; background: white; }
+.img-toolbar select:focus, .img-toolbar input[type="text"]:focus { border-color: var(--blue); }
+.img-toolbar select { min-width: 150px; }
+.img-toolbar input[type="text"] { flex: 1; max-width: 220px; }
+.img-count { font-size: 0.78rem; color: var(--muted); margin-left: auto; }
+.img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+.img-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: box-shadow var(--t); }
+.img-card:hover { box-shadow: var(--shadow); }
+.img-card.img-selected { border: 2.5px solid var(--blue); }
+.img-thumb-wrap { position: relative; cursor: pointer; }
+.img-thumb-wrap img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: var(--border); }
+.img-check { position: absolute; top: 8px; left: 8px; width: 20px; height: 20px; border-radius: 50%; background: white; border: 2px solid rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--t); }
+.img-check.checked { background: var(--blue); border-color: var(--blue); }
+.img-check.checked::after { content: '✓'; color: white; font-size: 0.65rem; font-weight: 800; }
+.img-source-badge { position: absolute; bottom: 6px; left: 6px; font-size: 0.55rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; background: rgba(0,0,0,0.6); color: white; padding: 2px 6px; border-radius: 3px; }
+.img-card-body { padding: 10px 12px 12px; }
+.img-card-chapter { font-size: 0.68rem; color: var(--blue); font-weight: 700; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.img-card-caption { font-size: 0.78rem; color: var(--muted); margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: italic; }
+.img-card-actions { display: flex; gap: 5px; }
+.img-btn { font-size: 0.7rem; padding: 4px 9px; border-radius: 4px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 700; transition: all var(--t); }
+.img-btn:hover { background: var(--blue-light); color: var(--blue); border-color: var(--blue); }
+.img-btn.primary { background: var(--blue-light); color: var(--blue); border-color: var(--blue); }
+.img-empty { text-align: center; padding: 60px 20px; color: var(--muted); font-style: italic; }
+.img-bulk-bar { display: none; background: #1a2535; color: white; border-radius: var(--radius); padding: 10px 16px; margin-bottom: 16px; align-items: center; gap: 12px; flex-wrap: wrap; }
+.img-bulk-bar.visible { display: flex; }
+.img-bulk-bar span { font-size: 0.82rem; font-weight: 700; }
+.img-bulk-btn { font-size: 0.72rem; padding: 5px 12px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.25); background: transparent; color: rgba(255,255,255,0.8); cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 700; transition: all var(--t); }
+.img-bulk-btn:hover { background: rgba(255,255,255,0.1); }
+
+/* MODAL */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 400; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal { background: white; border-radius: var(--radius); box-shadow: 0 8px 40px rgba(0,0,0,0.2); width: 500px; max-width: 100%; max-height: 90vh; overflow-y: auto; }
+.modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { font-size: 1rem; font-weight: 800; color: var(--blue-dark); }
+.modal-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--muted); line-height: 1; padding: 0; }
+.modal-body { padding: 20px; }
+.modal-img-preview { width: 100%; max-height: 220px; object-fit: contain; border-radius: 6px; margin-bottom: 16px; border: 1px solid var(--border); background: var(--cream); display: block; }
+.modal-field { margin-bottom: 14px; }
+.modal-field label { display: block; font-size: 0.72rem; font-weight: 800; color: var(--blue-dark); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+.modal-field input, .modal-field select, .modal-field textarea { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-family: 'Nunito', sans-serif; font-size: 0.9rem; color: var(--ink); outline: none; transition: border-color var(--t); background: white; }
+.modal-field input:focus, .modal-field select:focus, .modal-field textarea:focus { border-color: var(--blue); }
+.modal-field textarea { min-height: 80px; resize: vertical; }
+.modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+.modal-btn { padding: 8px 18px; border-radius: 6px; font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: 1.5px solid var(--border); background: transparent; color: var(--muted); transition: all var(--t); }
+.modal-btn:hover { background: var(--cream); }
+.modal-btn.primary { background: var(--blue); color: white; border-color: var(--blue); }
+.modal-btn.primary:hover { background: var(--blue-dark); }
+.modal-btn.danger { border-color: #ffb3b3; color: #b00020; }
+.modal-btn.danger:hover { background: #fff0f0; }
+
+/* MISC */
+.hidden { display: none !important; }
+input[type="file"] { display: none; }
+.upload-prog { position: fixed; bottom: 20px; right: 20px; background: #1a1a2e; color: white; padding: 10px 16px; border-radius: 6px; font-size: 0.82rem; z-index: 300; display: none; font-weight: 600; }
+.upload-prog.show { display: block; }
+.toast-msg { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1a1a2e; color: white; padding: 10px 20px; border-radius: 6px; font-size: 0.82rem; z-index: 500; display: none; font-weight: 600; }
+.toast-msg.show { display: block; }
+
+@media (max-width: 680px) {
+  .sidebar { width: 180px; }
+  .story-view, .img-mgr, .fm-editor { padding: 20px 14px 80px; }
+  .img-stats { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="https://welcome.lastinglegacyonline.com" target="_blank">
+    <img class="header-logo" src="https://welcome.lastinglegacyonline.com/wp-content/uploads/2025/02/cropped-LLOnlineLogo-Web.png" alt="Lasting Legacy Online" onerror="this.style.display='none'" />
+  </a>
+  <div class="header-div"></div>
+  <div class="header-label">Story Editor</div>
+  <div class="header-book" id="header-book-title"></div>
+  <div class="save-ind" id="save-indicator">All changes saved</div>
+  <a href="https://app.lastinglegacyonline.com" target="_blank" class="hdr-btn orange">✍️ Answer Questions</a>
+  <button class="hdr-btn" onclick="logout()">← Change Book</button>
+</header>
+
+<div class="app">
+  <!-- LOGIN -->
+  <div class="main" id="login-screen">
+    <div class="login-wrap">
+      <div class="login-card">
+        <h2>Edit Your Story</h2>
+        <p>Enter your story's URL slug and 4-digit PIN to open the editor.</p>
+        <div class="login-fields">
+          <input type="text" class="login-input" id="slug-input" placeholder="your-name-slug"
+            onkeydown="if(event.key==='Enter') document.getElementById('pin-input').focus()" />
+          <input type="text" class="login-input pin-input" id="pin-input" placeholder="PIN"
+            maxlength="4" inputmode="numeric" pattern="[0-9]*"
+            onkeydown="if(event.key==='Enter') loadBook()" />
+        </div>
+        <div class="login-hint">
+          Slug: end of your story URL &nbsp;·&nbsp; PIN: 4-digit number sent to you
+        </div>
+        <div id="login-error" class="err"></div>
+        <button class="btn-primary" onclick="loadBook()">Open My Story →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDITOR -->
+  <div id="editor-app" class="hidden" style="display:flex;width:100%">
+    <div class="sidebar" id="chapter-sidebar"></div>
+    <div class="main" id="main-editor">
+      <div id="story-view" class="story-view">
+        <p style="color:var(--muted);text-align:center;padding:60px 0;">Select a chapter to begin editing</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Image edit modal -->
+<div class="modal-overlay" id="img-modal" onclick="if(event.target===this)closeImgModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="img-modal-title">Edit image</h3>
+      <button class="modal-close" onclick="closeImgModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <img id="img-modal-preview" src="" class="modal-img-preview" />
+      <div class="modal-field">
+        <label>Caption</label>
+        <textarea id="img-modal-caption" placeholder="Add a caption for this image…" rows="3"></textarea>
+      </div>
+      <div class="modal-field">
+        <label>Move to chapter</label>
+        <select id="img-modal-chapter" onchange="updatePageDropdown()">
+          <option value="">Keep in current chapter</option>
+        </select>
+      </div>
+      <div class="modal-field" id="img-modal-page-field">
+        <label>Assign to page (optional)</label>
+        <select id="img-modal-page">
+          <option value="">Chapter gallery — not tied to a specific page</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn danger" onclick="downloadCurrentImg()">⬇ Download</button>
+      <button class="modal-btn" onclick="closeImgModal()">Cancel</button>
+      <button class="modal-btn primary" onclick="saveImgChanges()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="upload-prog" id="upload-progress">📷 Uploading…</div>
+<div class="toast-msg" id="toast-msg"></div>
+<input type="file" id="img-file-input" accept="image/*" />
+
+<script>
+const SUPABASE_URL  = "https://uhzncrsbytxwdlmldwqf.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoem5jcnNieXR4d2RsbWxkd3FmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0NTI3MjYsImV4cCI6MjA3NTAyODcyNn0.N6R5ucBZNwxL9jZsKouiF47hNuoxkGVNc1Qkw4AMrgk";
+const IMPORT_SECRET = "legacy2026";
+const EDITOR_FN     = `${SUPABASE_URL}/functions/v1/story-editor`;
+
+// State
+let book = null, currentPin = "", chapters = [], pages = [], gallery = [];
+let activeChapterId = null, activeView = null;
+let saveTimers = {}, currentImgTarget = null;
+let imgModalData = null;
+let imgSelected = new Set();
+
+// API
+async function api(body) {
+  const writeActions = ["savePage","addPage","deletePage","reorderPages","addGalleryImage","deleteGalleryImage","saveChapter","saveBook","updateGalleryImage","updatePageImage"];
+  const enriched = writeActions.includes(body.action)
+    ? { ...body, pin: currentPin, slug: book?.slug }
+    : body;
+  const res = await fetch(EDITOR_FN, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-import-secret": IMPORT_SECRET },
+    body: JSON.stringify(enriched),
+  });
+  const data = await res.json();
+  if (!res.ok || data.error) throw new Error(data.error || "API error");
+  return data;
+}
+
+async function uploadImage(file, bookSlug) {
+  const fd = new FormData();
+  fd.append("file", file); fd.append("bookSlug", bookSlug); fd.append("pin", currentPin);
+  const res = await fetch(EDITOR_FN, { method: "POST", headers: { "x-import-secret": IMPORT_SECRET }, body: fd });
+  const data = await res.json();
+  if (!res.ok || data.error) throw new Error(data.error || "Upload failed");
+  return data.url;
+}
+
+// Save indicator
+function setSaving() { const el = document.getElementById("save-indicator"); el.textContent = "Saving…"; el.className = "save-ind saving"; }
+function setSaved()  { const el = document.getElementById("save-indicator"); el.textContent = "Saved ✓";  el.className = "save-ind saved"; setTimeout(() => el.className = "save-ind", 2000); }
+function setSaveErr(){ const el = document.getElementById("save-indicator"); el.textContent = "Save failed"; el.className = "save-ind error"; }
+
+function showToast(msg) {
+  const t = document.getElementById("toast-msg");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+// Load book (with PIN)
+async function loadBook() {
+  const slug = document.getElementById("slug-input").value.trim().toLowerCase();
+  const pin  = document.getElementById("pin-input").value.trim();
+  if (!slug || !pin) { showLoginErr("Please enter both your slug and PIN."); return; }
+  const errEl = document.getElementById("login-error");
+  errEl.style.display = "none";
+  try {
+    const data = await api({ action: "load", slug, pin });
+    currentPin = pin;
+    book = data.book; chapters = data.chapters || []; pages = data.pages || []; gallery = data.gallery || [];
+    document.getElementById("header-book-title").textContent = book.title;
+    document.getElementById("login-screen").classList.add("hidden");
+    const app = document.getElementById("editor-app");
+    app.classList.remove("hidden"); app.style.display = "flex";
+    buildSidebar();
+    loadFrontMatter();
+  } catch(e) {
+    showLoginErr(e.message === "Incorrect PIN" ? "Incorrect PIN. Please try again." : "Book not found. Check your slug and PIN.");
+  }
+}
+
+function showLoginErr(msg) {
+  const errEl = document.getElementById("login-error");
+  errEl.textContent = msg; errEl.style.display = "block";
+}
+
+function logout() {
+  book = null; chapters = []; pages = []; gallery = []; activeChapterId = null; currentPin = "";
+  document.getElementById("slug-input").value = "";
+  document.getElementById("pin-input").value = "";
+  document.getElementById("login-screen").classList.remove("hidden");
+  document.getElementById("editor-app").classList.add("hidden");
+  document.getElementById("header-book-title").textContent = "";
+}
+
+// Sidebar
+function buildSidebar() {
+  const sb = document.getElementById("chapter-sidebar");
+  sb.innerHTML = "";
+
+  const fm = document.createElement("div");
+  fm.className = "fm-item" + (activeView === "fm" ? " active" : "");
+  fm.id = "fm-sidebar-item";
+  fm.innerHTML = `<span class="fm-icon">📖</span><span>Front Matter</span>`;
+  fm.onclick = () => loadFrontMatter();
+  sb.appendChild(fm);
+
+  // Image manager entry
+  const imgMgr = document.createElement("div");
+  imgMgr.className = "fm-item" + (activeView === "images" ? " active" : "");
+  imgMgr.id = "imgmgr-sidebar-item";
+  imgMgr.innerHTML = `<span class="fm-icon">🖼</span><span>Photo Library</span>`;
+  imgMgr.onclick = () => loadImageManager();
+  sb.appendChild(imgMgr);
+
+  const label = document.createElement("div");
+  label.className = "sb-head"; label.style.marginTop = "8px"; label.textContent = "Chapters";
+  sb.appendChild(label);
+
+  chapters.forEach(ch => {
+    const item = document.createElement("div");
+    item.className = "ch-item" + (ch.id === activeChapterId ? " active" : "");
+    item.id = `ch-item-${ch.id}`;
+    item.innerHTML = `<span class="ch-num">${ch.number}</span><span class="ch-name">${escHtml(ch.title)}</span>`;
+    item.onclick = () => loadChapter(ch.id);
+    sb.appendChild(item);
+  });
+}
+
+function setActiveNav(view, chapterId) {
+  activeView = view; activeChapterId = chapterId;
+  document.querySelectorAll(".ch-item, .fm-item").forEach(el => el.classList.remove("active"));
+  if (view === "fm")     document.getElementById("fm-sidebar-item")?.classList.add("active");
+  if (view === "images") document.getElementById("imgmgr-sidebar-item")?.classList.add("active");
+  if (view === "chapter" && chapterId) document.getElementById(`ch-item-${chapterId}`)?.classList.add("active");
+}
+
+// ─────────────────────────────────────────────────────
+// IMAGE MANAGER
+// ─────────────────────────────────────────────────────
+function loadImageManager() {
+  setActiveNav("images", null);
+  const main = document.getElementById("main-editor");
+
+  // Collect all images from pages + gallery
+  const chMap = {}; chapters.forEach(c => chMap[c.id] = c.title || `Chapter ${c.number}`);
+  const pageMap = {}; pages.forEach(p => pageMap[p.id] = p.subtitle || `Page ${p.id}`);
+
+  const allImgs = [];
+  pages.filter(p => p.image_url).forEach(p => {
+    allImgs.push({ id: p.id, source: "page", url: p.image_url, caption: p.image_caption || "", chapterId: p.chapter_id, chapterName: chMap[p.chapter_id] || "Unknown", pageId: null, label: p.subtitle || "" });
+  });
+  gallery.filter(g => g.image_url).forEach(g => {
+    allImgs.push({ id: g.id, source: "gallery", url: g.image_url, caption: g.image_caption || g.image_title || "", chapterId: g.chapter_id, chapterName: chMap[g.chapter_id] || "Unknown", pageId: g.page_id, label: g.image_title || "" });
+  });
+
+  const withCap = allImgs.filter(i => i.caption?.trim()).length;
+
+  const wrap = document.createElement("div");
+  wrap.className = "img-mgr";
+  wrap.innerHTML = `
+    <div class="img-mgr-title">🖼 Photo Library — all images in your story</div>
+    <div class="img-stats">
+      <div class="img-stat"><div class="img-stat-num">${allImgs.length}</div><div class="img-stat-label">Total photos</div></div>
+      <div class="img-stat"><div class="img-stat-num">${allImgs.filter(i=>i.source==="page").length}</div><div class="img-stat-label">Page images</div></div>
+      <div class="img-stat"><div class="img-stat-num">${allImgs.filter(i=>i.source==="gallery").length}</div><div class="img-stat-label">Gallery photos</div></div>
+      <div class="img-stat"><div class="img-stat-num">${withCap}</div><div class="img-stat-label">With captions</div></div>
+    </div>
+    <div class="img-toolbar">
+      <select id="im-filter-ch" onchange="renderImgGrid()">
+        <option value="">All chapters</option>
+        ${chapters.map(c=>`<option value="${c.id}">${escHtml(c.title||'Chapter '+c.number)}</option>`).join("")}
+      </select>
+      <select id="im-filter-src" onchange="renderImgGrid()">
+        <option value="">All sources</option>
+        <option value="page">Page images</option>
+        <option value="gallery">Gallery photos</option>
+      </select>
+      <input type="text" id="im-search" placeholder="Search captions…" oninput="renderImgGrid()" />
+      <span class="img-count" id="im-count"></span>
+    </div>
+    <div class="img-bulk-bar" id="im-bulk-bar">
+      <span id="im-bulk-count">0 selected</span>
+      <select id="im-bulk-chapter" style="padding:5px 8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:white;border-radius:4px;font-family:'Nunito',sans-serif;font-size:0.78rem;">
+        <option value="">Move to chapter…</option>
+        ${chapters.map(c=>`<option value="${c.id}">${escHtml(c.title||'Chapter '+c.number)}</option>`).join("")}
+      </select>
+      <button class="img-bulk-btn" onclick="bulkMove()">Move selected</button>
+      <button class="img-bulk-btn" onclick="bulkDownload()">Download all</button>
+      <button class="img-bulk-btn" onclick="clearImgSelection()">Clear</button>
+    </div>
+    <div class="img-grid" id="im-grid"></div>
+    <div class="img-empty hidden" id="im-empty">No photos found</div>
+  `;
+
+  main.innerHTML = "";
+  main.appendChild(wrap);
+  main.scrollTo({ top: 0 });
+
+  window._imgMgrData = allImgs;
+  imgSelected.clear();
+  renderImgGrid();
+}
+
+function renderImgGrid() {
+  const allImgs = window._imgMgrData || [];
+  const chFilter  = document.getElementById("im-filter-ch")?.value || "";
+  const srcFilter = document.getElementById("im-filter-src")?.value || "";
+  const q = (document.getElementById("im-search")?.value || "").toLowerCase();
+
+  const filtered = allImgs.filter(img => {
+    if (chFilter  && String(img.chapterId) !== chFilter) return false;
+    if (srcFilter && img.source !== srcFilter) return false;
+    if (q && !img.caption.toLowerCase().includes(q) && !img.label.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  document.getElementById("im-count").textContent = `${filtered.length} photo${filtered.length !== 1 ? "s" : ""}`;
+  const grid = document.getElementById("im-grid");
+  const empty = document.getElementById("im-empty");
+  if (!filtered.length) { grid.innerHTML = ""; empty.classList.remove("hidden"); return; }
+  empty.classList.add("hidden");
+
+  grid.innerHTML = filtered.map(img => {
+    const key = img.source + img.id;
+    const sel = imgSelected.has(key);
+    return `<div class="img-card${sel ? " img-selected" : ""}" id="imgcard-${img.source}-${img.id}">
+      <div class="img-thumb-wrap">
+        <img src="${escHtml(img.url)}" alt="" loading="lazy" onerror="this.style.opacity=0.3" onclick="openImgModal('${img.source}',${img.id})" />
+        <div class="img-check${sel ? " checked" : ""}" onclick="toggleImgSelect(event,'${img.source}',${img.id})"></div>
+        <span class="img-source-badge">${img.source === "gallery" ? "gallery" : "page"}</span>
+      </div>
+      <div class="img-card-body">
+        <div class="img-card-chapter">${escHtml(img.chapterName)}</div>
+        <div class="img-card-caption">${escHtml(img.caption) || '<em style="color:var(--border)">No caption</em>'}</div>
+        <div class="img-card-actions">
+          <button class="img-btn" onclick="downloadImg('${escHtml(img.url)}',${img.id})">⬇ Download</button>
+          <button class="img-btn primary" onclick="openImgModal('${img.source}',${img.id})">Edit</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function toggleImgSelect(e, source, id) {
+  e.stopPropagation();
+  const key = source + id;
+  if (imgSelected.has(key)) imgSelected.delete(key); else imgSelected.add(key);
+  const card = document.getElementById(`imgcard-${source}-${id}`);
+  const check = card?.querySelector(".img-check");
+  card?.classList.toggle("img-selected", imgSelected.has(key));
+  check?.classList.toggle("checked", imgSelected.has(key));
+  const bar = document.getElementById("im-bulk-bar");
+  bar?.classList.toggle("visible", imgSelected.size > 0);
+  const cnt = document.getElementById("im-bulk-count");
+  if (cnt) cnt.textContent = `${imgSelected.size} selected`;
+}
+
+function clearImgSelection() {
+  imgSelected.clear();
+  document.querySelectorAll(".img-card.img-selected").forEach(c => c.classList.remove("img-selected"));
+  document.querySelectorAll(".img-check.checked").forEach(c => c.classList.remove("checked"));
+  document.getElementById("im-bulk-bar")?.classList.remove("visible");
+}
+
+async function bulkMove() {
+  const chId = document.getElementById("im-bulk-chapter")?.value;
+  if (!chId) { showToast("Select a chapter first"); return; }
+  let count = 0;
+  for (const key of imgSelected) {
+    const source = key.startsWith("gallery") ? "gallery" : "page";
+    const id = parseInt(key.replace(source, ""));
+    try {
+      if (source === "gallery") await api({ action: "updateGalleryImage", imageId: id, chapterId: parseInt(chId), pageId: null });
+      else await api({ action: "updatePageImage", pageId: id, chapterId: parseInt(chId) });
+      const img = (window._imgMgrData || []).find(i => i.source === source && i.id === id);
+      if (img) { img.chapterId = parseInt(chId); img.chapterName = chapters.find(c => c.id === parseInt(chId))?.title || ""; img.pageId = null; }
+      // Update local state
+      if (source === "gallery") { const g = gallery.find(g => g.id === id); if (g) { g.chapter_id = parseInt(chId); g.page_id = null; } }
+      else { const p = pages.find(p => p.id === id); if (p) p.chapter_id = parseInt(chId); }
+      count++;
+    } catch(e) { console.error(e); }
+  }
+  clearImgSelection();
+  renderImgGrid();
+  showToast(`Moved ${count} photo${count !== 1 ? "s" : ""}`);
+}
+
+function bulkDownload() {
+  let count = 0;
+  imgSelected.forEach(key => {
+    const source = key.startsWith("gallery") ? "gallery" : "page";
+    const id = parseInt(key.replace(source, ""));
+    const img = (window._imgMgrData || []).find(i => i.source === source && i.id === id);
+    if (img) { setTimeout(() => downloadImg(img.url, img.id), count * 400); count++; }
+  });
+  showToast(`Downloading ${count} photo${count !== 1 ? "s" : ""}…`);
+}
+
+function downloadImg(url, id) {
+  const a = document.createElement("a");
+  a.href = url; a.download = `photo-${id}.jpg`; a.target = "_blank";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+// Image modal
+function openImgModal(source, id) {
+  const img = (window._imgMgrData || []).find(i => i.source === source && i.id === id);
+  if (!img) return;
+  imgModalData = { ...img };
+
+  document.getElementById("img-modal-preview").src = img.url;
+  document.getElementById("img-modal-title").textContent = img.label || "Edit photo";
+  document.getElementById("img-modal-caption").value = img.caption || "";
+
+  // Populate chapter dropdown
+  const chSel = document.getElementById("img-modal-chapter");
+  chSel.innerHTML = `<option value="">Keep in current chapter (${escHtml(img.chapterName)})</option>` +
+    chapters.map(c => `<option value="${c.id}"${c.id === img.chapterId ? " selected" : ""}>${escHtml(c.title||'Chapter '+c.number)}</option>`).join("");
+
+  updatePageDropdown(img.chapterId, img.pageId);
+  document.getElementById("img-modal").classList.add("open");
+}
+
+function updatePageDropdown(chapterId, currentPageId) {
+  const selChId = parseInt(document.getElementById("img-modal-chapter").value) || (imgModalData?.chapterId);
+  const relPages = pages.filter(p => p.chapter_id === selChId);
+  const pageSel = document.getElementById("img-modal-page");
+  pageSel.innerHTML = `<option value="">Chapter gallery — not tied to a specific page</option>` +
+    relPages.map(p => `<option value="${p.id}"${p.id === currentPageId ? " selected" : ""}>${escHtml(p.subtitle||'Page '+p.id)}</option>`).join("");
+  document.getElementById("img-modal-page-field").style.display = imgModalData?.source === "gallery" ? "" : "none";
+}
+
+function closeImgModal() {
+  document.getElementById("img-modal").classList.remove("open");
+  imgModalData = null;
+}
+
+async function saveImgChanges() {
+  if (!imgModalData) return;
+  const caption   = document.getElementById("img-modal-caption").value.trim();
+  const chapterId = parseInt(document.getElementById("img-modal-chapter").value) || imgModalData.chapterId;
+  const pageId    = parseInt(document.getElementById("img-modal-page").value) || null;
+
+  try {
+    if (imgModalData.source === "gallery") {
+      await api({ action: "updateGalleryImage", imageId: imgModalData.id, imageCaption: caption, chapterId, pageId });
+      const g = gallery.find(g => g.id === imgModalData.id);
+      if (g) { g.image_caption = caption; g.chapter_id = chapterId; g.page_id = pageId; }
+    } else {
+      await api({ action: "updatePageImage", pageId: imgModalData.id, imageCaption: caption, chapterId });
+      const p = pages.find(p => p.id === imgModalData.id);
+      if (p) { p.image_caption = caption; p.chapter_id = chapterId; }
+    }
+    // Refresh local img mgr data
+    const img = (window._imgMgrData || []).find(i => i.source === imgModalData.source && i.id === imgModalData.id);
+    if (img) {
+      img.caption = caption; img.chapterId = chapterId;
+      img.chapterName = chapters.find(c => c.id === chapterId)?.title || img.chapterName;
+      if (imgModalData.source === "gallery") img.pageId = pageId;
+    }
+    renderImgGrid();
+    showToast("Saved");
+    closeImgModal();
+  } catch(e) { showToast("Save failed: " + e.message); }
+}
+
+function downloadCurrentImg() {
+  if (imgModalData) downloadImg(imgModalData.url, imgModalData.id);
+}
+
+// ─────────────────────────────────────────────────────
+// FRONT MATTER
+// ─────────────────────────────────────────────────────
+function loadFrontMatter() {
+  setActiveNav("fm", null);
+  const view = document.getElementById("story-view");
+  view.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "fm-editor";
+  wrap.innerHTML = `<div class="fm-section-title">📖 Front Matter — appears at the start of your book</div>`;
+
+  const coverCard = document.createElement("div");
+  coverCard.className = "fm-card";
+  coverCard.innerHTML = `<div class="fm-card-header"><span class="fm-card-label">📸 Book Cover Photo</span><span class="fm-card-hint">Shows at the top of your story</span></div>`;
+  const coverZone = document.createElement("div"); coverZone.id = "fm-cover-zone";
+  renderFmCover(coverZone); coverCard.appendChild(coverZone); wrap.appendChild(coverCard);
+
+  const titleCard = document.createElement("div"); titleCard.className = "fm-card";
+  titleCard.innerHTML = `<div class="fm-card-header"><span class="fm-card-label">📚 Book Title</span></div>
+    <input class="fm-field" id="fm-title" type="text" placeholder="The title of this story…" value="${escHtml(book.title||'')}" oninput="scheduleBookSave()" />`;
+  wrap.appendChild(titleCard);
+
+  const dedCard = document.createElement("div"); dedCard.className = "fm-card";
+  dedCard.innerHTML = `<div class="fm-card-header"><span class="fm-card-label">🕊 Dedication</span><span class="fm-card-hint">Optional</span></div>
+    <textarea class="fm-field" id="fm-dedication" rows="3" placeholder="e.g. For my family, with love…" oninput="scheduleBookSave()">${escHtml(book.dedication||'')}</textarea>`;
+  wrap.appendChild(dedCard);
+
+  const introCard = document.createElement("div"); introCard.className = "fm-card";
+  introCard.innerHTML = `<div class="fm-card-header"><span class="fm-card-label">✍️ Introduction</span></div>
+    <textarea class="fm-field" id="fm-intro" rows="6" placeholder="Write a brief introduction to your story…" oninput="scheduleBookSave()">${escHtml(book.intro||book.lede||'')}</textarea>`;
+  wrap.appendChild(introCard);
+
+  view.appendChild(wrap);
+  document.getElementById("main-editor").scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function renderFmCover(zone) {
+  zone.innerHTML = "";
+  if (book.image_url) {
+    zone.className = "fm-cover-zone";
+    zone.innerHTML = `<img src="${escHtml(book.image_url)}" alt="Book cover" />
+      <div class="fm-cover-overlay">
+        <button class="fm-cover-btn" onclick="triggerImg({type:'bookCover'})">🔄 Change</button>
+        <button class="fm-cover-btn" onclick="removeBookCover()">🗑 Remove</button>
+      </div>`;
+  } else {
+    zone.className = "";
+    zone.innerHTML = `<div class="fm-cover-empty" onclick="triggerImg({type:'bookCover'})">🖼 Click to add a book cover photo</div>`;
+  }
+}
+
+async function removeBookCover() {
+  if (!confirm("Remove book cover photo?")) return;
+  try { book.image_url = null; await api({ action: "saveBook", title: book.title, dedication: book.dedication, intro: book.intro||book.lede, imageUrl: null }); const z = document.getElementById("fm-cover-zone"); if (z) renderFmCover(z); setSaved(); }
+  catch(e) { alert("Could not remove cover: " + e.message); }
+}
+
+let bookSaveTimer = null;
+function scheduleBookSave() { clearTimeout(bookSaveTimer); setSaving(); bookSaveTimer = setTimeout(doBookSave, 1400); }
+async function doBookSave() {
+  const title = document.getElementById("fm-title")?.value || book.title;
+  const dedication = document.getElementById("fm-dedication")?.value || "";
+  const intro = document.getElementById("fm-intro")?.value || "";
+  try { await api({ action: "saveBook", title, dedication, intro, imageUrl: book.image_url||null }); book.title=title; book.dedication=dedication; book.intro=intro; document.getElementById("header-book-title").textContent=title; setSaved(); }
+  catch(e) { setSaveErr(); }
+}
+
+// ─────────────────────────────────────────────────────
+// CHAPTER VIEW
+// ─────────────────────────────────────────────────────
+function loadChapter(chapterId) {
+  setActiveNav("chapter", chapterId);
+  const ch = chapters.find(c => c.id === chapterId);
+  if (!ch) return;
+  const chPages = pages.filter(p => p.chapter_id === chapterId).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+  const chGallery = gallery.filter(g => g.chapter_id === chapterId);
+  const view = document.getElementById("story-view");
+  view.innerHTML = "";
+
+  const chHdr = document.createElement("div"); chHdr.className = "ch-editor-header";
+  const coverZone = document.createElement("div"); coverZone.id = `ch-cover-${chapterId}`; renderCoverZone(coverZone, ch); chHdr.appendChild(coverZone);
+
+  const titleEl = document.createElement("div"); titleEl.className = "ch-title-display"; titleEl.textContent = ch.title||"Chapter Title"; titleEl.dataset.chapterId = chapterId;
+  titleEl.addEventListener("click", ()=>{ titleEl.contentEditable="true"; titleEl.focus(); const r=document.createRange();r.selectNodeContents(titleEl);const s=window.getSelection();s.removeAllRanges();s.addRange(r); });
+  titleEl.addEventListener("blur", ()=>{ titleEl.contentEditable="false"; const c=chapters.find(x=>x.id===chapterId); if(c)c.title=titleEl.textContent; scheduleChapterSave(chapterId); buildSidebar(); });
+  titleEl.addEventListener("keydown", e=>{ if(e.key==="Enter"){e.preventDefault();titleEl.blur();} });
+  chHdr.appendChild(titleEl);
+
+  const ledeEl = document.createElement("div"); ledeEl.className = "ch-lede-display"; ledeEl.dataset.placeholder = "Add a chapter introduction… (click to edit)"; ledeEl.textContent = ch.lede||"";
+  ledeEl.addEventListener("click", ()=>{ ledeEl.contentEditable="true"; ledeEl.focus(); });
+  ledeEl.addEventListener("blur", ()=>{ ledeEl.contentEditable="false"; const c=chapters.find(x=>x.id===chapterId); if(c)c.lede=ledeEl.textContent; scheduleChapterSave(chapterId); });
+  chHdr.appendChild(ledeEl);
+  view.appendChild(chHdr);
+
+  if (!chPages.length) {
+    const emp = document.createElement("p"); emp.style.cssText="color:var(--muted);text-align:center;padding:40px 0;font-style:italic;"; emp.textContent="No sections yet — add one below."; view.appendChild(emp);
+  } else {
+    chPages.forEach((page, idx) => view.appendChild(makePageBlock(page, chGallery, idx+1)));
+  }
+
+  const addBtn = document.createElement("button"); addBtn.className="add-section-btn"; addBtn.innerHTML="➕ Add New Section"; addBtn.onclick=()=>addPage(chapterId); view.appendChild(addBtn);
+  view.appendChild(makeChapterGalleryPanel(chapterId, chGallery.filter(g=>!g.page_id)));
+  document.getElementById("main-editor").scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function renderCoverZone(zone, ch) {
+  zone.innerHTML = "";
+  if (ch.image_url) {
+    zone.className = "ch-cover-zone";
+    zone.innerHTML = `<img src="${escHtml(ch.image_url)}" alt="Chapter cover" /><div class="ch-cover-overlay"><button class="ch-cover-btn" onclick="triggerImg({type:'chapterCover',chapterId:${ch.id}})">🔄 Change</button><button class="ch-cover-btn" onclick="removeCover(${ch.id})">🗑 Remove</button></div>`;
+  } else {
+    zone.className = "ch-cover-empty"; zone.innerHTML = "🖼 Click to add a chapter cover photo";
+    zone.onclick = () => triggerImg({ type: "chapterCover", chapterId: ch.id });
+  }
+}
+
+function makePageBlock(page, chGallery, num) {
+  const pageImgs = chGallery.filter(g => g.page_id === page.id);
+  const block = document.createElement("div"); block.className = "page-block"; block.id = `page-block-${page.id}`; block.dataset.pageId = page.id; block.dataset.sortOrder = page.sort_order||0;
+
+  const toolbar = document.createElement("div"); toolbar.className = "rte-toolbar";
+  toolbar.innerHTML = `<button class="rte-btn" onclick="fmt('bold')"><b>B</b></button><button class="rte-btn" onclick="fmt('italic')"><i>I</i></button><button class="rte-btn" onclick="fmt('underline')"><u>U</u></button><div class="rte-sep"></div><button class="rte-btn" onclick="fmtBlock('h2')">H2</button><button class="rte-btn" onclick="fmtBlock('h3')">H3</button><button class="rte-btn" onclick="fmtBlock('blockquote')">❝</button><button class="rte-btn" onclick="fmtBlock('p')">¶</button><div class="rte-sep"></div><button class="rte-btn" onclick="insertInlineImage(${page.id})">🖼 Insert Image</button>`;
+
+  const header = document.createElement("div"); header.className = "page-block-header";
+  header.innerHTML = `<span class="drag-handle" title="Drag to reorder">⠿</span><span class="page-block-num">P${num}</span><input class="page-subtitle-input" id="ep-subtitle-${page.id}" placeholder="Section heading (optional)" value="${escHtml(page.subtitle||'')}" oninput="schedulePageSave(${page.id})" /><div class="page-block-tools"><button class="tool-btn danger" onclick="deletePage(${page.id})" title="Delete section">🗑</button></div>`;
+
+  const content = document.createElement("div"); content.className = "page-content"; content.contentEditable = "true"; content.id = `ep-content-${page.id}`; content.dataset.placeholder = "Write your story here…"; content.innerHTML = mdToHtml(page.content||"");
+  content.addEventListener("input", () => schedulePageSave(page.id));
+  content.addEventListener("paste", e => { e.preventDefault(); document.execCommand("insertText", false, e.clipboardData.getData("text/plain")); });
+
+  const imgStrip = document.createElement("div"); imgStrip.className = "page-images"; imgStrip.id = `ep-img-strip-${page.id}`;
+  if (page.image_url) {
+    const hw = document.createElement("div"); hw.className="page-img-thumb"; hw.title=page.image_caption||"Header image"; hw.style.borderColor="var(--orange)";
+    hw.innerHTML = `<img src="${escHtml(page.image_url)}" alt="" /><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:white;font-size:0.5rem;text-align:center;padding:2px;letter-spacing:0.05em;">HEADER</div>`;
+    imgStrip.appendChild(hw);
+  }
+  pageImgs.forEach(img => imgStrip.appendChild(makeImgThumb(img, page.id)));
+  const addImgBtn = document.createElement("button"); addImgBtn.className="add-img-btn"; addImgBtn.title="Add photo"; addImgBtn.innerHTML=`📷<span>Add photo</span>`; addImgBtn.onclick=()=>triggerImg({type:"page",pageId:page.id,chapterId:page.chapter_id}); imgStrip.appendChild(addImgBtn);
+
+  block.appendChild(toolbar); block.appendChild(header); block.appendChild(content); block.appendChild(imgStrip);
+
+  block.draggable = false;
+  const dh = header.querySelector(".drag-handle");
+  dh.addEventListener("mousedown", () => { block.draggable = true; });
+  document.addEventListener("mouseup", () => { block.draggable = false; }, { capture: true });
+  block.addEventListener("dragstart", e => { if (!block.draggable) { e.preventDefault(); return; } e.dataTransfer.effectAllowed="move"; e.dataTransfer.setData("text/plain", page.id); setTimeout(()=>block.classList.add("dragging-block"),0); });
+  block.addEventListener("dragend", () => { block.draggable=false; block.classList.remove("dragging-block"); document.querySelectorAll(".page-block").forEach(b=>b.classList.remove("drag-over-top","drag-over-bottom")); });
+  block.addEventListener("dragover", e => { e.preventDefault(); const r=block.getBoundingClientRect(); document.querySelectorAll(".page-block").forEach(b=>b.classList.remove("drag-over-top","drag-over-bottom")); block.classList.add(e.clientY<r.top+r.height/2?"drag-over-top":"drag-over-bottom"); });
+  block.addEventListener("dragleave", () => block.classList.remove("drag-over-top","drag-over-bottom"));
+  block.addEventListener("drop", e => { e.preventDefault(); block.classList.remove("drag-over-top","drag-over-bottom"); const dId=parseInt(e.dataTransfer.getData("text/plain")); if(dId===page.id)return; const r=block.getBoundingClientRect(); reorderPage(dId,page.id,e.clientY<r.top+r.height/2); });
+  return block;
+}
+
+function fmt(cmd) { document.execCommand(cmd, false, null); }
+function fmtBlock(tag) { document.execCommand("formatBlock", false, tag); }
+function insertInlineImage(pageId) { triggerImg({ type: "inline", pageId }); }
+function triggerImg(target) { currentImgTarget = target; document.getElementById("img-file-input").click(); }
+
+document.getElementById("img-file-input").addEventListener("change", async e => {
+  const file = e.target.files[0]; if (!file || !currentImgTarget) return; e.target.value = "";
+  const prog = document.getElementById("upload-progress"); prog.classList.add("show");
+  try {
+    const url = await uploadImage(file, book.slug);
+    const t = currentImgTarget;
+    if (t.type === "inline") {
+      const content = document.getElementById(`ep-content-${t.pageId}`);
+      if (content) { content.focus(); const caption = prompt("Caption (optional):", "")||""; document.execCommand("insertHTML", false, `<figure style="margin:10px 0;text-align:center"><img src="${url}" style="max-width:100%;border-radius:4px;" alt="${escHtml(caption)}" />${caption?`<figcaption style="font-size:0.78rem;color:#888;font-style:italic;margin-top:4px;">${escHtml(caption)}</figcaption>`:""}</figure>`); schedulePageSave(t.pageId); }
+    } else if (t.type === "page") {
+      const caption = prompt("Caption (optional):", "")||"";
+      const data = await api({ action:"addGalleryImage", chapterId:t.chapterId, pageId:t.pageId, imageUrl:url, imageCaption:caption, bookSlug:book.slug });
+      gallery.push(data.image);
+      const strip = document.getElementById(`ep-img-strip-${t.pageId}`); if (strip) { const addBtn=strip.querySelector(".add-img-btn"); strip.insertBefore(makeImgThumb(data.image,t.pageId),addBtn); } setSaved();
+    } else if (t.type === "chapterGallery") {
+      const caption = prompt("Caption (optional):", "")||"";
+      const data = await api({ action:"addGalleryImage", chapterId:t.chapterId, pageId:null, imageUrl:url, imageCaption:caption, bookSlug:book.slug });
+      gallery.push(data.image); if (window[`refreshGallery_${t.chapterId}`]) window[`refreshGallery_${t.chapterId}`](); setSaved();
+    } else if (t.type === "chapterCover") {
+      const ch = chapters.find(c=>c.id===t.chapterId); if (ch) { ch.image_url=url; await api({action:"saveChapter",chapterId:t.chapterId,title:ch.title||"",lede:ch.lede||"",imageUrl:url}); const z=document.getElementById(`ch-cover-${t.chapterId}`); if(z)renderCoverZone(z,ch); setSaved(); }
+    } else if (t.type === "bookCover") {
+      book.image_url = url; await api({action:"saveBook",title:book.title,dedication:book.dedication,intro:book.intro||book.lede,imageUrl:url}); const z=document.getElementById("fm-cover-zone"); if(z)renderFmCover(z); setSaved();
+    }
+  } catch(err) { alert("Upload failed: "+err.message); setSaveErr(); }
+  finally { prog.classList.remove("show"); currentImgTarget = null; }
+});
+
+function makeImgThumb(img, pageId) {
+  const wrap = document.createElement("div"); wrap.className="page-img-thumb"; wrap.id=`img-thumb-${img.id}`; wrap.title=img.image_caption||"";
+  wrap.innerHTML = `<img src="${escHtml(img.image_url)}" alt="${escHtml(img.image_caption||'')}" /><button class="del-img" onclick="deleteImg(${img.id},${pageId})" title="Remove">✕</button>`;
+  return wrap;
+}
+
+async function deleteImg(imgId, pageId) {
+  if (!confirm("Remove this photo?")) return;
+  try { await api({action:"deleteGalleryImage",imageId:imgId}); gallery=gallery.filter(g=>g.id!==imgId); const t=document.getElementById(`img-thumb-${imgId}`); if(t)t.remove(); setSaved(); }
+  catch(e) { alert("Could not remove: "+e.message); }
+}
+
+function makeChapterGalleryPanel(chapterId, floatingImgs) {
+  const panel = document.createElement("div"); panel.className="ch-gallery-panel"; panel.id=`ch-gallery-${chapterId}`;
+  let open = true;
+  const hdr = document.createElement("div"); hdr.className="ch-gallery-hdr";
+  hdr.innerHTML=`<span class="ch-gallery-hdr-title">📸 Chapter Photo Gallery</span><span class="ch-gallery-count" id="cgc-${chapterId}">${floatingImgs.length} photos</span><span id="cgt-${chapterId}">▲</span>`;
+  hdr.onclick=()=>{ open=!open; body.style.display=open?"block":"none"; document.getElementById(`cgt-${chapterId}`).textContent=open?"▲":"▼"; };
+  panel.appendChild(hdr);
+  const body = document.createElement("div"); body.className="ch-gallery-body";
+  function renderGrid() {
+    const ex=body.querySelector(".ch-gallery-grid"); if(ex)ex.remove();
+    const imgs=gallery.filter(g=>g.chapter_id===chapterId&&!g.page_id);
+    const c=document.getElementById(`cgc-${chapterId}`); if(c)c.textContent=`${imgs.length} photo${imgs.length!==1?"s":""}`;
+    if (imgs.length) {
+      const grid=document.createElement("div"); grid.className="ch-gallery-grid";
+      imgs.forEach(img=>{ const card=document.createElement("div"); card.className="ch-gallery-card"; card.id=`gc-${img.id}`; card.innerHTML=`<img src="${escHtml(img.image_url)}" alt="" loading="lazy" /><button class="ch-gallery-del" onclick="deleteChGalleryImg(${img.id},${chapterId})">✕</button><div class="ch-gallery-card-cap" title="${escHtml(img.image_caption||img.image_title||'')}">${escHtml(img.image_caption||img.image_title||'No caption')}</div>`; grid.appendChild(card); });
+      body.insertBefore(grid, body.querySelector(".add-gallery-btn"));
+    }
+  }
+  const addBtn=document.createElement("button"); addBtn.className="add-gallery-btn"; addBtn.innerHTML="📷 Add Photo to Chapter Gallery"; addBtn.onclick=()=>triggerImg({type:"chapterGallery",chapterId}); body.appendChild(addBtn);
+  renderGrid(); window[`refreshGallery_${chapterId}`]=renderGrid; panel.appendChild(body); return panel;
+}
+
+async function deleteChGalleryImg(imgId, chapterId) {
+  if (!confirm("Remove this photo?")) return;
+  try { await api({action:"deleteGalleryImage",imageId:imgId}); gallery=gallery.filter(g=>g.id!==imgId); const card=document.getElementById(`gc-${imgId}`); if(card)card.remove(); if(window[`refreshGallery_${chapterId}`])window[`refreshGallery_${chapterId}`](); setSaved(); }
+  catch(e) { alert("Could not remove: "+e.message); }
+}
+
+async function removeCover(chapterId) {
+  if (!confirm("Remove chapter cover photo?")) return;
+  const ch=chapters.find(c=>c.id===chapterId); if(!ch)return;
+  try { ch.image_url=null; await api({action:"saveChapter",chapterId,title:ch.title||"",lede:ch.lede||"",imageUrl:null}); const z=document.getElementById(`ch-cover-${chapterId}`); if(z)renderCoverZone(z,ch); setSaved(); }
+  catch(e) { alert("Could not remove: "+e.message); }
+}
+
+function schedulePageSave(pageId) { clearTimeout(saveTimers[`p-${pageId}`]); setSaving(); saveTimers[`p-${pageId}`]=setTimeout(()=>doPageSave(pageId),1400); }
+async function doPageSave(pageId) {
+  const contentEl=document.getElementById(`ep-content-${pageId}`); const subtitleEl=document.getElementById(`ep-subtitle-${pageId}`); if(!contentEl)return;
+  try { await api({action:"savePage",pageId,content:contentEl.innerHTML,subtitle:subtitleEl?.value||null}); const pg=pages.find(p=>p.id===pageId); if(pg){pg.content=contentEl.innerHTML;pg.subtitle=subtitleEl?.value||null;} setSaved(); }
+  catch(e) { setSaveErr(); }
+}
+
+function scheduleChapterSave(chapterId) { clearTimeout(saveTimers[`c-${chapterId}`]); setSaving(); saveTimers[`c-${chapterId}`]=setTimeout(()=>doChapterSave(chapterId),1400); }
+async function doChapterSave(chapterId) {
+  const ch=chapters.find(c=>c.id===chapterId);
+  try { await api({action:"saveChapter",chapterId,title:ch?.title||"",lede:ch?.lede||"",imageUrl:ch?.image_url||null}); setSaved(); }
+  catch(e) { setSaveErr(); }
+}
+
+async function addPage(chapterId) {
+  const chPages=pages.filter(p=>p.chapter_id===chapterId); const maxOrder=chPages.reduce((m,p)=>Math.max(m,p.sort_order||0),0);
+  try { const data=await api({action:"addPage",chapterId,bookSlug:book.slug,afterOrder:maxOrder}); pages.push(data.page); loadChapter(chapterId); setTimeout(()=>{ const c=document.getElementById(`ep-content-${data.page.id}`); if(c)c.focus(); },100); setSaved(); }
+  catch(e) { alert("Could not add section: "+e.message); }
+}
+
+async function deletePage(pageId) {
+  if (!confirm("Delete this section? This cannot be undone.")) return;
+  try { await api({action:"deletePage",pageId}); pages=pages.filter(p=>p.id!==pageId); gallery=gallery.filter(g=>g.page_id!==pageId); const b=document.getElementById(`page-block-${pageId}`); if(b)b.remove(); setSaved(); }
+  catch(e) { alert("Could not delete: "+e.message); }
+}
+
+async function reorderPage(draggedId, targetId, before) {
+  const chapterId=pages.find(p=>p.id===draggedId)?.chapter_id; if(!chapterId)return;
+  let chPages=pages.filter(p=>p.chapter_id===chapterId).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+  const dragged=chPages.find(p=>p.id===draggedId); chPages=chPages.filter(p=>p.id!==draggedId);
+  const tIdx=chPages.findIndex(p=>p.id===targetId); if(tIdx===-1)return;
+  chPages.splice(before?tIdx:tIdx+1,0,dragged);
+  const updates=chPages.map((p,i)=>({id:p.id,sort_order:i+1}));
+  updates.forEach(u=>{const pg=pages.find(p=>p.id===u.id);if(pg){pg.sort_order=u.sort_order;pg.final_order=u.sort_order;}});
+  loadChapter(chapterId); setSaving();
+  try { await api({action:"reorderPages",updates}); setSaved(); } catch(e) { setSaveErr(); }
+}
+
+function initFromUrl() {
+  const params=new URLSearchParams(window.location.search);
+  const slug=params.get("slug"); const pin=params.get("pin");
+  if (pin) { currentPin=pin; document.getElementById("pin-input").value=pin; }
+  if (slug) { document.getElementById("slug-input").value=slug; if(pin)loadBook(); }
+}
+
+function mdToHtml(text) {
+  if (!text) return "";
+  if (text.trim().startsWith("<")) return text;
+  return text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*_(.+?)_\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/_(.+?)_/g,"<em>$1</em>").replace(/^### (.+)$/gm,"<h3>$1</h3>").replace(/^## (.+)$/gm,"<h2>$1</h2>").replace(/^# (.+)$/gm,"<h1>$1</h1>").replace(/^> (.+)$/gm,"<blockquote>$1</blockquote>").replace(/\n\n/g,"</p><p>").replace(/^(?!<[hbp])(.+)$/gm,"<p>$1</p>").replace(/<p><\/p>/g,"");
+}
+function escHtml(s) { return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+initFromUrl();
+</script>
+</body>
+</html>
