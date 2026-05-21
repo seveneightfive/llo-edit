@@ -1172,7 +1172,7 @@ function showPage(pageId) {
   const quoteHint = mkEl("span","ed-card-hint"); quoteHint.textContent="Optional callout quote shown in the reader";
   quoteHdr.appendChild(quoteLbl); quoteHdr.appendChild(quoteHint); quoteCard.appendChild(quoteHdr);
   const quoteTA=mkEl("textarea","ed-field"); quoteTA.rows=3;
-  quoteTA.id=`quote-${pageId}`; quoteTA.placeholder="e.g. "Be a goat, not a sheep."";
+  quoteTA.id=`quote-${pageId}`; quoteTA.placeholder="e.g. \"Be a goat, not a sheep.\"";
   quoteTA.textContent=pg.quote||""; quoteTA.oninput=()=>schedulePageSave(pageId);
   const attrIn=mkEl("input","ed-field"); attrIn.type="text";
   attrIn.id=`attr-${pageId}`; attrIn.placeholder="Attribution (optional, e.g. Uncle Ouija)";
