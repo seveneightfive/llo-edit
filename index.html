@@ -59,26 +59,33 @@ header{
 /* ── LAYOUT ───────────────────────────────────────────── */
 .app{display:flex;height:calc(100vh - var(--hh));margin-top:var(--hh)}
 
-/* ── SIDEBAR ──────────────────────────────────────────── */
+/* ── SIDEBAR (LEFT: NAV) ──────────────────────────────── */
 .sidebar{
   width:var(--sb);background:var(--sb-bg);color:var(--sb-txt);
-  flex-shrink:0;border-left:1px solid var(--sb-border);
+  flex-shrink:0;border-right:1px solid var(--sb-border);
   display:flex;flex-direction:column;
   transition:transform var(--t);
   height:calc(100vh - var(--hh));position:sticky;top:var(--hh);
 }
-.sb-toolbar{
-  flex-shrink:0;background:#0f1825;border-bottom:1px solid var(--sb-border);
-  padding:8px 10px;position:sticky;top:0;z-index:5;min-height:46px;
-  display:flex;align-items:center;
-}
-.sb-toolbar:empty::before{content:"Open a page to use formatting";font-size:.68rem;color:var(--sb-muted);font-style:italic;letter-spacing:.04em}
-.sb-toolbar .rte-toolbar{background:transparent;border:none;padding:0;position:static;display:flex;flex-wrap:wrap;gap:2px;width:100%}
-.sb-toolbar .rte-btn{color:var(--sb-txt);font-size:.78rem;padding:4px 7px}
-.sb-toolbar .rte-btn:hover{background:rgba(255,255,255,.08);color:#fff}
-.sb-toolbar .rte-btn.is-active{background:var(--orange);color:#fff}
-.sb-toolbar .rte-sep{background:rgba(255,255,255,.12)}
 .sb-scroll{flex:1;overflow-y:auto;min-height:0}
+
+/* ── RIGHT TOOL PANEL (FORMATTING) ────────────────────── */
+.toolpanel{
+  width:64px;flex-shrink:0;background:#1a2535;border-left:1px solid var(--sb-border);
+  display:flex;flex-direction:column;align-items:stretch;
+  height:calc(100vh - var(--hh));position:sticky;top:var(--hh);
+  padding:8px 6px;gap:4px;overflow-y:auto;
+}
+.toolpanel:empty::before{content:"Open a page to format";font-size:.6rem;color:var(--sb-muted);font-style:italic;text-align:center;padding:10px 4px;display:block}
+.toolpanel .rte-toolbar{background:transparent;border:none;padding:0;position:static;display:flex;flex-direction:column;gap:3px;width:100%}
+.toolpanel .rte-btn{
+  color:var(--sb-txt);font-size:.78rem;padding:8px 4px;border-radius:6px;
+  width:100%;min-height:36px;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.03);
+}
+.toolpanel .rte-btn:hover{background:rgba(255,255,255,.12);color:#fff}
+.toolpanel .rte-btn.is-active{background:var(--orange);color:#fff}
+.toolpanel .rte-sep{width:80%;height:1px;background:rgba(255,255,255,.12);margin:4px auto}
 .sb-section{padding:6px 0;border-bottom:1px solid var(--sb-border)}
 .sb-head{padding:10px 14px 4px;font-size:.58rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--orange)}
 /* top-level nav items (Front Matter, Photo Library) */
@@ -307,24 +314,35 @@ header{
 .tiptap-body img{max-width:100%;border-radius:4px;margin:8px 0;display:block}
 /* figure blocks in body */
 .tiptap-body figure{
-  margin:12px 0;border:1px solid var(--border);border-radius:6px;overflow:hidden;
-  position:relative;background:white;
+  margin:18px 0;border:2px solid var(--border);border-radius:8px;overflow:hidden;
+  position:relative;background:white;transition:border-color var(--t),box-shadow var(--t);
 }
-.tiptap-body figure.ProseMirror-selectednode{outline:2px solid var(--blue)}
+.tiptap-body figure:hover{border-color:var(--blue);box-shadow:0 4px 14px rgba(41,143,194,.18)}
+.tiptap-body figure.ProseMirror-selectednode{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,130,0,.25)}
 .tiptap-body figure img{width:100%;display:block;max-height:360px;object-fit:contain;background:#f8f8f8}
 .tiptap-body figcaption{
-  padding:6px 10px;font-size:.78rem;color:var(--muted);font-style:italic;
+  padding:8px 12px;font-size:.8rem;color:var(--muted);font-style:italic;
   background:var(--cream);border-top:1px solid var(--border);outline:none;
 }
-.tiptap-body figcaption:empty::before{content:"Caption (click to edit)";color:var(--border)}
-/* drag handle for figure */
-.tiptap-body figure::before{
-  content:"⋮⋮⋮⋮";position:absolute;top:6px;left:6px;
-  background:rgba(255,255,255,.85);color:var(--muted);
-  font-size:.75rem;padding:2px 5px;border-radius:3px;cursor:grab;
-  opacity:0;transition:opacity var(--t);letter-spacing:2px;
+.tiptap-body figcaption:empty::before{content:"Add a caption…";color:#c0c8d0}
+/* Figure action bar: drag handle + delete, always visible on hover */
+.fig-actions{
+  position:absolute;top:8px;right:8px;display:flex;gap:6px;z-index:5;
+  opacity:0;transition:opacity var(--t);
 }
-.tiptap-body figure:hover::before{opacity:1}
+.tiptap-body figure:hover .fig-actions,
+.tiptap-body figure.ProseMirror-selectednode .fig-actions{opacity:1}
+.fig-btn{
+  background:rgba(26,37,53,.92);color:white;border:none;border-radius:6px;
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  font-size:.95rem;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;
+  box-shadow:0 2px 8px rgba(0,0,0,.25);transition:all var(--t);
+}
+.fig-btn:hover{transform:translateY(-1px);background:#000}
+.fig-btn.drag{cursor:grab}
+.fig-btn.drag:active{cursor:grabbing}
+.fig-btn.del{background:rgba(192,0,32,.92)}
+.fig-btn.del:hover{background:#c00020}
 /* placeholder */
 .tiptap-body p.is-editor-empty:first-child::before{
   content:attr(data-placeholder);color:#c0c8d0;pointer-events:none;float:left;height:0;
@@ -404,8 +422,9 @@ input[type=file]{display:none}
 
 /* ── MOBILE ───────────────────────────────────────────── */
 @media(max-width:720px){
-  .sidebar{position:fixed;top:var(--hh);bottom:0;right:0;left:auto;z-index:150;transform:translateX(100%)}
+  .sidebar{position:fixed;top:var(--hh);bottom:0;left:0;right:auto;z-index:150;transform:translateX(-100%)}
   .sidebar.mobile-open{transform:translateX(0)}
+  .toolpanel{position:fixed;top:var(--hh);bottom:0;right:0;z-index:140}
   .hdr-sb-btn{display:block}
   .imgmgr-stats{grid-template-columns:repeat(2,1fr)}
   .ed-wrap,.imgmgr-wrap{padding:20px 14px 80px}
@@ -449,11 +468,11 @@ input[type=file]{display:none}
 
   <!-- EDITOR -->
   <div id="editor-app" class="hidden" style="display:flex;width:100%">
-    <div class="main" id="main-area"></div>
-    <div class="sidebar" id="sidebar">
-      <div class="sb-toolbar" id="sb-toolbar"></div>
+    <aside class="sidebar" id="sidebar">
       <div class="sb-scroll" id="sb-scroll"></div>
-    </div>
+    </aside>
+    <main class="main" id="main-area"></main>
+    <aside class="toolpanel" id="sb-toolbar"></aside>
   </div>
 </div>
 
@@ -576,6 +595,37 @@ const FigureNode = Node.create({
   addNodeView() {
     return ({ node, getPos, editor }) => {
       const dom = document.createElement('figure');
+
+      // Action bar: drag handle + delete (visible on hover/selection)
+      const actions = document.createElement('div');
+      actions.className = 'fig-actions';
+      actions.contentEditable = 'false';
+
+      const drag = document.createElement('button');
+      drag.className = 'fig-btn drag';
+      drag.type = 'button';
+      drag.title = 'Drag to move';
+      drag.setAttribute('draggable', 'true');
+      drag.setAttribute('data-drag-handle', '');
+      drag.innerHTML = '⋮⋮';
+
+      const del = document.createElement('button');
+      del.className = 'fig-btn del';
+      del.type = 'button';
+      del.title = 'Delete image';
+      del.innerHTML = '🗑';
+      del.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
+      del.addEventListener('click', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        const pos = getPos();
+        if (typeof pos === 'number') {
+          editor.chain().focus().deleteRange({ from: pos, to: pos + node.nodeSize }).run();
+        }
+      });
+
+      actions.appendChild(drag);
+      actions.appendChild(del);
+
       const img = document.createElement('img');
       img.src = node.attrs.src;
       img.alt = node.attrs.alt;
@@ -583,7 +633,6 @@ const FigureNode = Node.create({
       const cap = document.createElement('figcaption');
       cap.contentEditable = 'true';
       cap.textContent = node.attrs.caption || '';
-      cap.placeholder = 'Caption…';
       cap.addEventListener('input', () => {
         const pos = getPos();
         if (typeof pos === 'number') {
@@ -593,6 +642,7 @@ const FigureNode = Node.create({
           });
         }
       });
+      dom.appendChild(actions);
       dom.appendChild(img);
       dom.appendChild(cap);
       return { dom, contentDOM: null };
@@ -1239,7 +1289,7 @@ function showPage(pageId) {
         <button class="rte-btn" onclick="rteCmd('toggleHeading',{level:3})">H3</button>
         <button class="rte-btn" onclick="rteCmd('toggleHeading',{level:4})">H4</button>
         <div class="rte-sep"></div>
-        <button class="rte-btn" onclick="rteCmd('toggleBlockquote')">❝</button>
+        <button class="rte-btn" title="Insert quote (anywhere in body)" onclick="rteCmd('toggleBlockquote')">❝</button>
         <button class="rte-btn" onclick="rteCmd('toggleBulletList')">• List</button>
         <button class="rte-btn" onclick="rteCmd('toggleOrderedList')">1. List</button>
         <button class="rte-btn" onclick="rteCmd('setHorizontalRule')">—</button>
